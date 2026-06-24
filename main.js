@@ -104,14 +104,12 @@ module.exports = class FileTreeColorLevelsPlugin extends Plugin {
     const target = evt.target.closest('.tree-item-self');
     if (!target) return;
 
-    // Isolate the actual target item text string context
     const innerTitleEl = target.querySelector('.tree-item-inner, .nav-folder-title-content, .nav-file-title-content');
     if (!innerTitleEl) return;
 
     const breadcrumbs = [];
     let currentItem = target.closest('.tree-item');
 
-    // Climb structural tree branches step-by-step up to the file container root boundary
     while (currentItem) {
       const selfTitleEl = currentItem.querySelector('.tree-item-self .tree-item-inner');
       if (selfTitleEl) {
@@ -129,16 +127,13 @@ module.exports = class FileTreeColorLevelsPlugin extends Plugin {
     }
 
     if (breadcrumbs.length > 0) {
-      // Format text layout with standard high-visibility arrows string connectors
       this.tooltipEl.textContent = breadcrumbs.join(' ➔ ');
       this.tooltipEl.className = 'file-tree-spectrum-tooltip-visible';
     }
   }
 
-  // Real-time tracking layout routine updating floating coordinates relative to the hardware cursor
   moveTooltipPosition(evt) {
     if (this.tooltipEl && this.tooltipEl.className === 'file-tree-spectrum-tooltip-visible') {
-      // Offsetting values by +15px prevents the popup card from blocking the mouse selection box clicks
       this.tooltipEl.style.left = (evt.clientX + 15) + 'px';
       this.tooltipEl.style.top = (evt.clientY + 15) + 'px';
     }
@@ -157,19 +152,21 @@ module.exports = class FileTreeColorLevelsPlugin extends Plugin {
     const styleEl = document.createElement('style');
     styleEl.id = 'obsidian-file-tree-color-levels';
 
+    // Core layout schemes built using a 10% lower resting lightness baseline profile.
+    // Full color values seamlessly activate on mouse hover states.
     const colorsMap = {
-      "0": "hsl(0, 75%, 45%)",    // Level 0: Red
-      "1": "hsl(280, 70%, 45%)",  // Level 1: Purple
-      "2": "hsl(210, 75%, 45%)",  // Level 2: Blue
-      "3": "hsl(120, 65%, 40%)",  // Level 3: Green
-      "4": "hsl(50, 80%, 40%)",   // Level 4: Yellow
-      "5": "hsl(25, 80%, 45%)"    // Level 5: Orange
+      "0": { rest: "hsl(0, 75%, 35%)",   hover: "hsl(0, 75%, 45%)" },    // Red
+      "1": { rest: "hsl(280, 70%, 35%)", hover: "hsl(280, 70%, 45%)" },  // Purple
+      "2": { rest: "hsl(210, 75%, 35%)", hover: "hsl(210, 75%, 45%)" },  // Blue
+      "3": { rest: "hsl(120, 65%, 30%)", hover: "hsl(120, 65%, 40%)" },  // Green
+      "4": { rest: "hsl(50, 80%, 30%)",  hover: "hsl(50, 80%, 40%)" },   // Yellow
+      "5": { rest: "hsl(25, 80%, 35%)",  hover: "hsl(25, 80%, 45%)" }    // Orange
     };
 
     let cssRules = `
       .tree-item.nav-folder {
         box-sizing: border-box !important;
-        transition: border 0.25s ease !important;
+        transition: border-color 0.25s ease, border-image 0.25s ease, margin 0.25s ease !important;
         margin-top: 2px !important;
         margin-bottom: 2px !important;
       }
@@ -179,11 +176,10 @@ module.exports = class FileTreeColorLevelsPlugin extends Plugin {
         border-inline-start: none !important;
       }
 
-      /* Core Floating Tooltip Styles layer rules map */
       #obsidian-file-tree-spectrum-tooltip {
         position: fixed !important;
         z-index: 99999 !important;
-        pointer-events: none !important; /* Stops tracking conflicts if cursor hits text box */
+        pointer-events: none !important;
         padding: 6px 10px !important;
         background-color: var(--background-floating, #2a2a2a) !important;
         color: var(--text-normal, #ffffff) !important;
@@ -207,21 +203,29 @@ module.exports = class FileTreeColorLevelsPlugin extends Plugin {
     `;
 
     Object.keys(colorsMap).forEach((depthKey) => {
-      const targetColor = colorsMap[depthKey];
+      const colors = colorsMap[depthKey];
 
       cssRules += `
+        /* Resting State: 10% Darker borders */
         .tree-item.nav-folder[data-nav-depth="${depthKey}"],
         .tree-item.nav-folder[data-nav-depth$="${parseInt(depthKey) + 6}"],
         .tree-item.nav-folder[data-nav-depth$="${parseInt(depthKey) + 12}"] {
-          border-left: 2px solid ${targetColor} !important;
+          border-left: 2px solid ${colors.rest} !important;
           border-bottom: 1px solid transparent !important;
-          border-image: linear-gradient(to right, ${targetColor}, transparent) 1 !important;
+          border-image: linear-gradient(to right, ${colors.rest}, transparent) 1 !important;
+        }
+
+        /* Hover State: Bring up to normal vibrant full-spectrum hue lightness levels */
+        .tree-item.nav-folder[data-nav-depth="${depthKey}"]:hover,
+        .tree-item.nav-folder[data-nav-depth$="${parseInt(depthKey) + 6}"]:hover,
+        .tree-item.nav-folder[data-nav-depth$="${parseInt(depthKey) + 12}"]:hover {
+          border-left: 2px solid ${colors.hover} !important;
+          border-image: linear-gradient(to right, ${colors.hover}, transparent) 1 !important;
         }
       `;
     });
 
     styleEl.innerHTML = cssRules;
     document.head.appendChild(styleEl);
-    console.log('[File Tree Levels] 6-Step custom folder spectrum and breadcrumb tooltip layers successfully registered.');
   }
 };
