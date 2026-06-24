@@ -108,6 +108,11 @@ module.exports = class FileTreeColorLevelsPlugin extends Plugin {
         margin-top: 2px !important;
         margin-bottom: 2px !important;
       }
+    .tree-item-children {
+        padding-inline-start: unset !important;
+        margin-inline-start: var(--nav-item-children-margin-start, var(--nav-item-children-margin-left));
+        border-inline-start: none !important;
+    }        
     `;
 
     // Map out the 6 strict color steps sequentially. 
@@ -120,8 +125,8 @@ module.exports = class FileTreeColorLevelsPlugin extends Plugin {
         .tree-item.nav-folder[data-nav-depth="${depthKey}"],
         .tree-item.nav-folder[data-nav-depth$="${parseInt(depthKey) + 6}"],
         .tree-item.nav-folder[data-nav-depth$="${parseInt(depthKey) + 12}"] {
-          border-left: 3px solid ${targetColor} !important;
-          border-bottom: 2px solid transparent !important;
+          border-left: 2px solid ${targetColor} !important;
+          border-bottom: 1px solid transparent !important;
           border-image: linear-gradient(to right, ${targetColor}, transparent) 1 !important;
         }
       `;
