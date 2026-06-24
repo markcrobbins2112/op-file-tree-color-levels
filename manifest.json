@@ -1,0 +1,11 @@
+{
+    "id": "file-tree-color-levels",
+    "name": "!!File Tree Color Levels",
+    "version": "1.0.0",
+    "minAppVersion": "1.0.0",
+    "description": "Colors Obsidian file explorer elements based on folder depth using a 12-point hue spectrum left-border and gradient bottom-border.",
+    "author": "AI Collaborator",
+    "authorUrl": "https://obsidian.md",
+    "isDesktopOnly": false
+  }
+  
