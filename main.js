@@ -4,30 +4,40 @@ module.exports = class FileTreeColorLevelsPlugin extends Plugin {
   constructor(app, manifest) {
     super(app, manifest);
     this.observer = null;
+    this.tooltipEl = null;
   }
 
   async onload() {
-    console.log('%c[File Tree Levels]%c Initializing 6-Step Folder Depth Color Engine...', 'color: #38ef7d; font-weight: bold;', 'color: default;');
+    console.log('%c[File Tree Levels]%c Initializing Folder Depth & Tooltip Engine...', 'color: #38ef7d; font-weight: bold;', 'color: default;');
 
-    // 1. Inject the universal layout style sheets into the document head context
+    // 1. Inject the universal layout style sheets and tooltip positioning classes
     this.injectStyles();
 
-    // 2. Run an immediate initial sweep once the core workspace layouts are ready
+    // 2. Initialize the single, shared global tooltip DOM element node layer
+    this.createTooltipElement();
+
+    // 3. Run an immediate initial sweep once the core workspace layouts are ready
     this.app.workspace.onLayoutReady(() => this.calculateFileTreeDepths());
 
-    // 3. Re-evaluate depths whenever layout panels toggle or structural leaves shift
+    // 4. Re-evaluate depths whenever layout panels toggle or structural leaves shift
     this.registerEvent(
       this.app.workspace.on('layout-change', () => this.calculateFileTreeDepths())
     );
 
-    // 4. Set up a MutationObserver to instantly capture expanding/collapsing folder trees
+    // 5. Set up a MutationObserver to instantly capture expanding/collapsing folder trees
     this.initializeFileTreeObserver();
+
+    // 6. Register high-performance global event delegation for the mouse hover tooltip tracking
+    this.registerDomEvent(document.body, 'mouseover', (evt) => this.handleFileTreeHover(evt));
+    this.registerDomEvent(document.body, 'mousemove', (evt) => this.moveTooltipPosition(evt));
+    this.registerDomEvent(document.body, 'mouseout', (evt) => this.hideFileTreeTooltip(evt));
   }
 
   onunload() {
     console.log('%c[File Tree Levels]%c Stripping depth markers and restoring theme layouts...', 'color: #38ef7d; font-weight: bold;', 'color: default;');
     
     if (this.observer) this.observer.disconnect();
+    if (this.tooltipEl) this.tooltipEl.remove();
 
     const styleEl = document.getElementById('obsidian-file-tree-color-levels');
     if (styleEl) styleEl.remove();
@@ -38,7 +48,6 @@ module.exports = class FileTreeColorLevelsPlugin extends Plugin {
   }
 
   initializeFileTreeObserver() {
-    // Intercepts newly rendered file rows right as a human expands directory trees
     this.observer = new MutationObserver((mutations) => {
       let shouldProcess = false;
       for (let i = 0; i < mutations.length; i++) {
@@ -59,14 +68,12 @@ module.exports = class FileTreeColorLevelsPlugin extends Plugin {
   }
 
   calculateFileTreeDepths() {
-    // Target precisely the structural navigation folder tree elements requested
     const navFolders = document.querySelectorAll('.tree-item.nav-folder');
     
     navFolders.forEach((folder) => {
       let depth = 0;
       let currentParent = folder.parentElement;
 
-      // Climb up the DOM tree, counting parent folders to evaluate accurate depth parameters
       while (currentParent) {
         if (currentParent.classList.contains('nav-folder') && currentParent.classList.contains('tree-item')) {
           depth++;
@@ -77,12 +84,71 @@ module.exports = class FileTreeColorLevelsPlugin extends Plugin {
         currentParent = currentParent.parentElement;
       }
 
-      // Stamp the calculated level parameter string attribute (0-indexed based on container wrapping)
       const depthString = String(depth);
       if (folder.getAttribute('data-nav-depth') !== depthString) {
         folder.setAttribute('data-nav-depth', depthString);
       }
     });
+  }
+
+  // Single instantiation factory for our hidden floating tooltip element
+  createTooltipElement() {
+    this.tooltipEl = document.createElement('span');
+    this.tooltipEl.id = 'obsidian-file-tree-spectrum-tooltip';
+    this.tooltipEl.className = 'file-tree-spectrum-tooltip-hidden';
+    document.body.appendChild(this.tooltipEl);
+  }
+
+  // Event Delegation Interceptor: Runs when the mouse hits any item inside the file explorer sidebar panel
+  handleFileTreeHover(evt) {
+    const target = evt.target.closest('.tree-item-self');
+    if (!target) return;
+
+    // Isolate the actual target item text string context
+    const innerTitleEl = target.querySelector('.tree-item-inner, .nav-folder-title-content, .nav-file-title-content');
+    if (!innerTitleEl) return;
+
+    const breadcrumbs = [];
+    let currentItem = target.closest('.tree-item');
+
+    // Climb structural tree branches step-by-step up to the file container root boundary
+    while (currentItem) {
+      const selfTitleEl = currentItem.querySelector('.tree-item-self .tree-item-inner');
+      if (selfTitleEl) {
+        const textVal = selfTitleEl.textContent.trim();
+        if (textVal) {
+          breadcrumbs.unshift(textVal); // Push items to front to preserve root-to-child order
+        }
+      }
+      
+      const parentFolder = currentItem.parentElement.closest('.tree-item.nav-folder');
+      if (!parentFolder || currentItem.parentElement.classList.contains('nav-files-container')) {
+        break;
+      }
+      currentItem = parentFolder;
+    }
+
+    if (breadcrumbs.length > 0) {
+      // Format text layout with standard high-visibility arrows string connectors
+      this.tooltipEl.textContent = breadcrumbs.join(' ➔ ');
+      this.tooltipEl.className = 'file-tree-spectrum-tooltip-visible';
+    }
+  }
+
+  // Real-time tracking layout routine updating floating coordinates relative to the hardware cursor
+  moveTooltipPosition(evt) {
+    if (this.tooltipEl && this.tooltipEl.className === 'file-tree-spectrum-tooltip-visible') {
+      // Offsetting values by +15px prevents the popup card from blocking the mouse selection box clicks
+      this.tooltipEl.style.left = (evt.clientX + 15) + 'px';
+      this.tooltipEl.style.top = (evt.clientY + 15) + 'px';
+    }
+  }
+
+  hideFileTreeTooltip(evt) {
+    const target = evt.target.closest('.tree-item-self');
+    if (target && this.tooltipEl) {
+      this.tooltipEl.className = 'file-tree-spectrum-tooltip-hidden';
+    }
   }
 
   injectStyles() {
@@ -101,27 +167,49 @@ module.exports = class FileTreeColorLevelsPlugin extends Plugin {
     };
 
     let cssRules = `
-      /* Apply resets and transitions exclusively onto structural folder blocks */
       .tree-item.nav-folder {
         box-sizing: border-box !important;
         transition: border 0.25s ease !important;
         margin-top: 2px !important;
         margin-bottom: 2px !important;
       }
-    .tree-item-children {
+      .tree-item-children {
         padding-inline-start: unset !important;
-        margin-inline-start: var(--nav-item-children-margin-start, var(--nav-item-children-margin-left));
+        margin-inline-start: var(--nav-item-children-margin-start, var(--nav-item-children-margin-left)) !important;
         border-inline-start: none !important;
-    }        
+      }
+
+      /* Core Floating Tooltip Styles layer rules map */
+      #obsidian-file-tree-spectrum-tooltip {
+        position: fixed !important;
+        z-index: 99999 !important;
+        pointer-events: none !important; /* Stops tracking conflicts if cursor hits text box */
+        padding: 6px 10px !important;
+        background-color: var(--background-floating, #2a2a2a) !important;
+        color: var(--text-normal, #ffffff) !important;
+        font-size: 11px !important;
+        font-family: var(--font-interface, sans-serif) !important;
+        border: 1px solid var(--background-modifier-border, #444444) !important;
+        border-radius: 4px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+        white-space: nowrap !important;
+      }
+      
+      .file-tree-spectrum-tooltip-hidden {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      
+      .file-tree-spectrum-tooltip-visible {
+        display: inline-block !important;
+        visibility: visible !important;
+      }
     `;
 
-    // Map out the 6 strict color steps sequentially. 
-    // Uses a modulo pattern fallback to wrap back smoothly to Red if folders exceed 6 layers deep.
     Object.keys(colorsMap).forEach((depthKey) => {
       const targetColor = colorsMap[depthKey];
 
       cssRules += `
-        /* Matches exact level depth, and loops infinitely down using CSS attribute matching strings */
         .tree-item.nav-folder[data-nav-depth="${depthKey}"],
         .tree-item.nav-folder[data-nav-depth$="${parseInt(depthKey) + 6}"],
         .tree-item.nav-folder[data-nav-depth$="${parseInt(depthKey) + 12}"] {
@@ -134,6 +222,6 @@ module.exports = class FileTreeColorLevelsPlugin extends Plugin {
 
     styleEl.innerHTML = cssRules;
     document.head.appendChild(styleEl);
-    console.log('[File Tree Levels] 6-Step custom folder spectrum rules appended successfully.');
+    console.log('[File Tree Levels] 6-Step custom folder spectrum and breadcrumb tooltip layers successfully registered.');
   }
 };
