@@ -1,0 +1,20 @@
+{
+  "name": "file-tree-color-levels",
+  "displayName": "File Tree Color Levels",
+  "version": "1.0.0",
+  "description": "Colors Obsidian file explorer elements based on folder depth using a 12-point hue spectrum left-border and gradient bottom-border.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/markcrobbins2112/project.git"
+  },
+  "author": "markcrobbins",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/markcrobbins2112/project/issues"
+  },
+  "homepage": "https://github.com/markcrobbins2112/project#readme"
+}

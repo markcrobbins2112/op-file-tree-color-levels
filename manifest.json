@@ -4,8 +4,8 @@
     "version": "1.0.0",
     "minAppVersion": "1.0.0",
     "description": "Colors Obsidian file explorer elements based on folder depth using a 12-point hue spectrum left-border and gradient bottom-border.",
-    "author": "AI Collaborator",
-    "authorUrl": "https://obsidian.md",
+    "author": "markcrobbins",
+    "authorUrl": "https://github.com/markcrobbins2112",
     "isDesktopOnly": false
   }
   
