@@ -6,8 +6,7 @@
 
 Colors Obsidian file explorer elements based on folder depth using a 12-point hue spectrum left-border and gradient bottom-border.
 
-![icon](icon.jpg)
-![tree](tree.jpg)
+![icon](icon.jpg) ![tree](tree.jpg)
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/markcrobbins)
 
 
