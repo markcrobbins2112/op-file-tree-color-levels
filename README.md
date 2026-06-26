@@ -8,8 +8,7 @@ Colors Obsidian file explorer elements based on folder depth using a 12-point hu
 
 ![icon](icon.jpg)
 ![tree](tree.jpg)
-[![Buy Me A Coffee](https://shields.io)](https://buymeacoffee.com/markcrobbins)
-
+[![Buy Me A Coffee](https://buymeacoffee.com/markcrobbins)]
 
 
 ## 📑 AI Primary Files
