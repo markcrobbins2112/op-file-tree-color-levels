@@ -10,10 +10,9 @@ Colors Obsidian file explorer elements based on folder depth using a 12-point hu
 ![tree](tree.jpg)
 [![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-blue.png)](https://www.buymeacoffee.com/markcrobbins)
 
-<a href="https://www.buymeacoffee.com/markcrobbins" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/arial-blue.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-<a href="https://buymeacoffee.com" target="_blank">
-  <img src="https://buymeacoffee.com" alt="Buy Me A Coffee" width="120">
-</a>
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/gbraad)
+
+
 
 
 ## 📑 AI Primary Files
